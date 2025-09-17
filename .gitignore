@@ -1,3 +1,7 @@
-out/
+.cache/
 build/
+
 .vs/
+__output/
+
+cmake/toolchain/example/

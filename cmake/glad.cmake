@@ -1,5 +1,5 @@
-function(link_glad TARGET_NAME)
-  add_subdirectory(../vendor/glad glad_cmake)
+add_subdirectory(../vendor/glad glad_cmake)
 
-  target_link_libraries(${TARGET_NAME} PRIVATE glad)
+function(link_glad TARGET_NAME ACCESS)
+  target_link_libraries(${TARGET_NAME} ${ACCESS} glad::glad)
 endfunction()
