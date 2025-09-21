@@ -29,6 +29,8 @@ int main() {
 
   glClearColor(.2f, .2f, .2f, 1.f);
 
+  ImVec4 clearColor(.2f, .2f, .2f, 1.f);
+
   while (!window.shouldClose()) {
     gl::Window::pollEvents();
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0) {
@@ -45,8 +47,11 @@ int main() {
       gl::gui::GuiWindow frame("Hello World");
 
       ImGui::Text("This is some useful text.");
+
+      ImGui::ColorEdit3("clear color", (float*)&clearColor);
     }
 
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     glClear(GL_COLOR_BUFFER_BIT);
 
     gui.endFrame();
