@@ -19,6 +19,11 @@ link_glm(${PROJECT_NAME} PUBLIC)
 include(../cmake/spdlog.cmake)
 LINK_SPDLOG_HEADER_ONLY(${PROJECT_NAME} PUBLIC)
 
+target_link_libraries(${PROJECT_NAME} PUBLIC text::text)
+
+include(../cmake/imgui.cmake)
+LINK_IMGUI(${PROJECT_NAME} PUBLIC)
+
 add_subdirectory(src)
 add_subdirectory("include")
 
