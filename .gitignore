@@ -5,3 +5,5 @@ build/
 __output/
 
 cmake/toolchain/example/
+
+imgui.ini
