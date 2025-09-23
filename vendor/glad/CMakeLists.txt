@@ -13,3 +13,7 @@ target_sources(glad
   BASE_DIRS
   include
 )
+target_precompile_headers(glad
+  PUBLIC
+    <glad/glad.h>
+)

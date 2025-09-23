@@ -1,0 +1,1 @@
+find_program(GIT_EXECUTABLE NAMES git PATHS "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\Git\\cmd")

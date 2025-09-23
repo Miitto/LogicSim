@@ -6,4 +6,5 @@ target_sources(${PROJECT_NAME}
   PRIVATE
     window.cpp
     gui.cpp
-)
+    "logger.cpp"
+ "buffer.cpp" "vao.cpp" "shaders.cpp")

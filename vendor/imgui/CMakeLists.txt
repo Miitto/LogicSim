@@ -5,7 +5,7 @@ project(imgui VERSION 3.92.4 LANGUAGES CXX)
 add_library(imgui)
 add_library(imgui::imgui ALIAS imgui)
 
-include(../../cmake/glfw.cmake)
+include(glfw)
 LINK_GLFW(imgui PRIVATE)
 
 target_sources(imgui
@@ -17,7 +17,6 @@ target_sources(imgui
 	imgui/imgui_widgets.cpp
 	imgui/backends/imgui_impl_glfw.cpp
 	imgui/backends/imgui_impl_opengl3.cpp
-	${IMGUI_BACKENDS}
 	PUBLIC
 	FILE_SET internalHeaders
 	TYPE HEADERS

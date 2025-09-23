@@ -7,28 +7,26 @@ include(FetchContent)
 add_library(${PROJECT_NAME})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(../cmake/glfw.cmake)
+message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
+
+include(glfw)
 link_glfw(${PROJECT_NAME} PUBLIC)
 
-include(../cmake/glad.cmake)
+include(glad)
 link_glad(${PROJECT_NAME} PUBLIC)
 
-include(../cmake/glm.cmake)
+include(glm)
 link_glm(${PROJECT_NAME} PUBLIC)
 
-include(../cmake/spdlog.cmake)
-LINK_SPDLOG_HEADER_ONLY(${PROJECT_NAME} PUBLIC)
-
-# target_link_libraries(${PROJECT_NAME} PUBLIC text::text)
-
-include(../cmake/imgui.cmake)
+include(imgui)
 LINK_IMGUI(${PROJECT_NAME} PUBLIC)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE logger::logger)
 
 add_subdirectory(src)
 add_subdirectory("include")
 
-target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd5050 /wd4458>
-  $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic -Werror -Wno-language-extension-token -fno-exceptions>
-)
+include(enableWarnings)
+ENABLE_WARNINGS(${PROJECT_NAME})
 
+target_precompile_headers(${PROJECT_NAME} PUBLIC <GLFW/glfw3.h>)
