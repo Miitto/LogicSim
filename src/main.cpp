@@ -1,16 +1,8 @@
-#include <iostream>
-#include <print>
-
-#include "gl/gl.hpp"
-#include "imgui/imgui.h"
-
-#include "logger.hpp"
-#include <gl\buffer.hpp>
-#include <gl\shaders.hpp>
-#include <gl\vao.hpp>
-
 #include "input.hpp"
+#include "logger.hpp"
+#include <gl/gl.hpp>
 #include <glm/glm.hpp>
+#include <imgui/imgui.h>
 
 int main() {
   Logger::info("Starting application");
@@ -38,13 +30,13 @@ int main() {
   gl::Program triProgram;
   {
     auto vertexShaderOpt =
-        gl::Shader::fromFile("./shaders/basic_vert.glsl", gl::Shader::VERTEX);
+        gl::Shader::fromFile("basic_vert.glsl", gl::Shader::VERTEX);
     if (!vertexShaderOpt.has_value()) {
       Logger::error("Failed to load vertex shader");
       return -1;
     }
     auto fragShaderOpt =
-        gl::Shader::fromFile("./shaders/basic_frag.glsl", gl::Shader::FRAGMENT);
+        gl::Shader::fromFile("basic_frag.glsl", gl::Shader::FRAGMENT);
     if (!fragShaderOpt.has_value()) {
       Logger::error("Failed to load fragment shader");
       return -1;

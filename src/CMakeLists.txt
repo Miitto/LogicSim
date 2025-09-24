@@ -19,6 +19,7 @@ target_sources(LogicSim PRIVATE
   <array>
   <algorithm>
   <iostream>
+  <gl/gl.hpp>
  )
 
 add_subdirectory(shaders)

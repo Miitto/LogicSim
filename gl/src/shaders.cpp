@@ -8,7 +8,10 @@ namespace gl {
                                          Shader::Type type) {
     constexpr std::size_t readSize = 4096;
 
-    auto absPath = std::filesystem::absolute(path);
+    std::string pathStr("./shaders/");
+    pathStr.append(path);
+
+    auto absPath = std::filesystem::absolute(pathStr);
 
     std::ifstream shaderFile(absPath);
 
