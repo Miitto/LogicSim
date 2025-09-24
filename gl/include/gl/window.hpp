@@ -51,13 +51,17 @@ namespace gl {
     /// upon creation. Defaults to false.</param>
     Window(int width, int height, const char* title, bool makeCurrent = false);
     ~Window();
+    operator GLFWwindow*() const { return window; }
 
     void makeCurrent() const;
     bool shouldClose() const;
     void swapBuffers() const;
     static void pollEvents();
 
-    operator GLFWwindow*() const { return window; }
+    void setUserPtr(void* ptr);
+    static void* getUserPtr(GLFWwindow* window);
+    void setKeyCallback(GLFWkeyfun callback) {
+      glfwSetKeyCallback(window, callback);
+    }
   };
-
 } // namespace gl

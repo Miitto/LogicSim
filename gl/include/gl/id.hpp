@@ -7,6 +7,7 @@ namespace gl {
     GLuint m_id = 0;
 
   public:
+    inline explicit Id() = default;
     inline Id(GLuint id) : m_id(id) {}
     ~Id() = default;
 

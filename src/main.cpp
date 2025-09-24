@@ -9,6 +9,7 @@
 #include <gl\shaders.hpp>
 #include <gl\vao.hpp>
 
+#include "input.hpp"
 #include <glm/glm.hpp>
 
 int main() {
@@ -30,31 +31,27 @@ int main() {
   ImVec4 clearColor(.2f, .2f, .2f, 1.f);
   glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
+  Input input(window);
+  window.setUserPtr(&input);
+  window.setKeyCallback(Input::glfwKeyCallback);
+
   gl::Program triProgram;
   {
-    gl::Shader vertexShader(gl::Shader::VERTEX,
-                            R"(
-        #version 460 core
-        layout(location = 0) in vec3 position;
-        layout(location = 1) in vec3 color;
+    auto vertexShaderOpt =
+        gl::Shader::fromFile("./shaders/basic_vert.glsl", gl::Shader::VERTEX);
+    if (!vertexShaderOpt.has_value()) {
+      Logger::error("Failed to load vertex shader");
+      return -1;
+    }
+    auto fragShaderOpt =
+        gl::Shader::fromFile("./shaders/basic_frag.glsl", gl::Shader::FRAGMENT);
+    if (!fragShaderOpt.has_value()) {
+      Logger::error("Failed to load fragment shader");
+      return -1;
+    }
 
-        layout(location = 0) out vec3 fragColor;
-
-        void main()
-        {
-            gl_Position = vec4(aPos, 1.0);
-        }
-    )");
-
-    gl::Shader fragShader(gl::Shader::FRAGMENT, R"(
-        #version 330 core
-        out vec4 FragColor;
-        layout(location = 0) in vec3 fragColor;
-        void main()
-        {
-            FragColor = vec4(fragColor, 1.0);
-        }
-    )");
+    auto& vertexShader = vertexShaderOpt.value();
+    auto& fragShader = fragShaderOpt.value();
 
     triProgram = gl::Program(vertexShader, fragShader);
   }
@@ -73,12 +70,12 @@ int main() {
   gl::Vao vao{};
   gl::Buffer vbo(3 * sizeof(Vertex), &vertices);
 
+  vao.bindVertexBuffer(0, vbo.id(), 0, sizeof(Vertex));
+  vao.attribFormat(0, 3, GL_FLOAT, false, offsetof(Vertex, position), 0);
+  vao.attribFormat(1, 3, GL_FLOAT, false, offsetof(Vertex, color), 0);
+
+  triProgram.bind();
   vao.bind();
-  glVertexAttributePointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                           (void*)offsetof(Vertex, position));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void*)offsetof(Vertex, color));
-  glEnableVertexAttribArray(0);
 
   while (!window.shouldClose()) {
     gl::Window::pollEvents();
@@ -87,10 +84,8 @@ int main() {
       continue;
     }
     gui.newFrame();
-    auto wantsMouse = gui.io().WantCaptureMouse;
-    auto wantsKeyboard = gui.io().WantCaptureKeyboard;
-    (void)wantsMouse;
-    (void)wantsKeyboard;
+    input.imGuiWantsMouse(gui.io().WantCaptureMouse);
+    input.imGuiWantsKeyboard(gui.io().WantCaptureKeyboard);
 
     {
       gl::gui::GuiWindow frame("Hello World");
@@ -102,6 +97,8 @@ int main() {
 
     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     gui.endFrame();
     window.swapBuffers();

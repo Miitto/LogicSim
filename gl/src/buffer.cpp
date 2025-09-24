@@ -19,7 +19,7 @@ inline void* gl::Buffer::map(GLbitfield flags, GLuint offset, GLuint length) {
   if (flags & GL_MAP_PERSISTENT_BIT) {
     void** mapping = &m_mapping;
     intptr_t* ptr = reinterpret_cast<intptr_t*>(mapping);
-    (*ptr) |= (1 << 63);
+    (*ptr) |= (1LL << 63L);
   }
   return m_mapping;
 }
@@ -28,7 +28,7 @@ inline void gl::Buffer::unmap() {
 
   if (m_mapping) {
 #ifndef NDEBUG
-    if (((reinterpret_cast<long>(m_mapping) >> 63) & 1) == 1) {
+    if (((reinterpret_cast<intptr_t>(m_mapping) >> 63) & 1) == 1) {
       gl::Logger::warn("Unmapped a persistently mapped buffer");
     }
 #endif

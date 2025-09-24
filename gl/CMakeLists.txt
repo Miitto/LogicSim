@@ -29,4 +29,4 @@ add_subdirectory("include")
 include(enableWarnings)
 ENABLE_WARNINGS(${PROJECT_NAME})
 
-target_precompile_headers(${PROJECT_NAME} PUBLIC <GLFW/glfw3.h>)
+target_precompile_headers(${PROJECT_NAME} PUBLIC <glad/glad.h> <GLFW/glfw3.h>)

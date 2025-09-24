@@ -122,6 +122,8 @@ namespace gl {
 
 #ifndef NDEBUG
     glEnable(GL_DEBUG_OUTPUT);
+    // Allows to breakpoint on GL errors and have the callstack be correct
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(debugMessageCallback, 0);
     gl::Logger::debug("Attached debug message callback");
 #endif
@@ -157,4 +159,10 @@ namespace gl {
   bool Window::shouldClose() const { return glfwWindowShouldClose(window); }
   void Window::swapBuffers() const { glfwSwapBuffers(window); }
   void Window::pollEvents() { glfwPollEvents(); }
+
+  void Window::setUserPtr(void* ptr) { glfwSetWindowUserPointer(window, ptr); }
+  void* Window::getUserPtr(GLFWwindow* window) {
+    return glfwGetWindowUserPointer(window);
+  }
+
 } // namespace gl

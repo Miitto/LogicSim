@@ -1,3 +1,28 @@
 #include <gl/vao.hpp>
 
-void gl::Vao::unbind() { glBindVertexArray(0); }
+namespace gl {
+  void gl::Vao::unbind() { glBindVertexArray(0); }
+
+  void gl::Vao::bindVertexBuffer(GLuint index, const gl::Id& bufferId,
+                                 GLuint offset, GLuint stride) {
+    glVertexArrayVertexBuffer(m_id, index, bufferId, offset, stride);
+  }
+
+  void gl::Vao::attribFormat(GLuint index, GLuint numComponents, GLenum type,
+                             bool normalize, GLuint offset,
+                             std::optional<GLuint> bufferIndex) {
+    glEnableVertexArrayAttrib(m_id, index);
+    glVertexArrayAttribFormat(m_id, index, numComponents, type,
+                              normalize ? GL_TRUE : GL_FALSE, offset);
+    if (bufferIndex.has_value()) {
+      glVertexArrayAttribBinding(m_id, index, bufferIndex.value());
+    }
+  }
+
+  void gl::Vao::bindAttribs(GLuint bufferIndex,
+                            std::initializer_list<GLuint> attribIndices) {
+    for (const auto& index : attribIndices) {
+      glVertexArrayAttribBinding(m_id, index, bufferIndex);
+    }
+  }
+} // namespace gl

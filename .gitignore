@@ -7,3 +7,6 @@ __output/
 cmake/toolchain/example/
 
 imgui.ini
+
+# Dir for tools not available, such as slang when missing the VulkanSDK
+external/

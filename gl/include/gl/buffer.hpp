@@ -1,6 +1,9 @@
 #pragma once
+
 #include <gl/id.hpp>
 #include <glad/glad.h>
+#include <limits>
+
 namespace gl {
   class Buffer {
     gl::Id m_id = 0;
@@ -30,9 +33,9 @@ namespace gl {
     Buffer(Buffer&& other) noexcept = default;
     Buffer& operator=(Buffer&& other) noexcept = default;
 
-    inline const GLuint& id() const { return m_id; }
+    inline const gl::Id& id() const { return m_id; }
     inline void bind(GLenum target) const { glBindBuffer(target, m_id); }
-    static void unbind(GLenum target) { glBindBuffer(target, 0); }
+    static void unbind(GLenum target);
 
     inline void* map(GLbitfield flags, GLuint offset = 0,
                      GLuint length = std::numeric_limits<GLuint>::max());

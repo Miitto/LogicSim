@@ -2,6 +2,7 @@
 
 #include <gl/id.hpp>
 #include <glad/glad.h>
+#include <optional>
 #include <span>
 #include <string_view>
 
@@ -14,7 +15,14 @@ namespace gl {
     Shader(Type type, std::string_view source);
     ~Shader();
 
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+    Shader(Shader&&) noexcept = default;
+    Shader& operator=(Shader&&) noexcept = default;
+
     const gl::Id& id() const { return m_id; }
+
+    static std::optional<Shader> fromFile(std::string_view path, Type type);
   };
 
   class Program {
@@ -27,10 +35,6 @@ namespace gl {
       m_id = glCreateProgram();
       (glAttachShader(m_id, shaders.id()), ...);
       glLinkProgram(m_id);
-      GLint success;
-      glGetProgramiv(m_id, GL_LINK_STATUS, &success);
-      if (!success)
-        handleLinkFail();
     }
 
     inline Program(std::span<std::reference_wrapper<Shader>> shaders) {
@@ -39,10 +43,6 @@ namespace gl {
         glAttachShader(m_id, shader.get().id());
       }
       glLinkProgram(m_id);
-      GLint success;
-      glGetProgramiv(m_id, GL_LINK_STATUS, &success);
-      if (!success)
-        handleLinkFail();
     }
 
     void bind() const { glUseProgram(m_id); }
