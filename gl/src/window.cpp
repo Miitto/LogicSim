@@ -101,6 +101,9 @@ namespace gl {
   WindowManager::WindowManager() {
     if (glfwInit()) {
       gl::Logger::debug("Window Manager initialized");
+#ifndef NDEBUG
+      glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
     }
   }
   WindowManager::~WindowManager() { glfwTerminate(); }
@@ -163,6 +166,12 @@ namespace gl {
   void Window::setUserPtr(void* ptr) { glfwSetWindowUserPointer(window, ptr); }
   void* Window::getUserPtr(GLFWwindow* window) {
     return glfwGetWindowUserPointer(window);
+  }
+
+  Window::Size Window::size() const {
+    Size s;
+    glfwGetWindowSize(window, &s.width, &s.height);
+    return s;
   }
 
 } // namespace gl

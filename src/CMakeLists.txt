@@ -4,7 +4,7 @@ add_executable(LogicSim)
 
 target_link_libraries(LogicSim PRIVATE logger::logger)
 
-target_link_libraries(LogicSim PRIVATE renderer::renderer)
+target_link_libraries(LogicSim PRIVATE gl::gl)
 
 
 target_sources(LogicSim PRIVATE

@@ -30,6 +30,7 @@ namespace gl {
     shaderFile.close();
 
     Shader shader(type, source);
+    Logger::debug("Compiled shader {}", path);
 
     return shader;
   }
@@ -44,6 +45,22 @@ namespace gl {
   Shader::~Shader() {
     if (m_id != 0) {
       glDeleteShader(m_id);
+    }
+  }
+
+  void Program::handleLinkFail() {
+    GLint success;
+    glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+    if (!success) {
+      GLint logLength;
+      glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &logLength);
+      if (logLength <= 0)
+        return;
+      std::string infoLog(logLength, '\0');
+      glGetProgramInfoLog(m_id, logLength, nullptr, infoLog.data());
+      gl::Logger::error("Program linking failed: {}", infoLog);
+      glDeleteProgram(m_id);
+      m_id = 0;
     }
   }
 } // namespace gl

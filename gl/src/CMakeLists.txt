@@ -4,7 +4,10 @@ target_sources(${PROJECT_NAME}
   TYPE HEADERS
 
   PRIVATE
+    buffer.cpp
     window.cpp
     gui.cpp
-    "logger.cpp"
- "buffer.cpp" "vao.cpp" "shaders.cpp")
+    logger.cpp
+    vao.cpp
+    shaders.cpp
+)

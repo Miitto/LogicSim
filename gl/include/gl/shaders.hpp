@@ -35,6 +35,7 @@ namespace gl {
       m_id = glCreateProgram();
       (glAttachShader(m_id, shaders.id()), ...);
       glLinkProgram(m_id);
+      handleLinkFail();
     }
 
     inline Program(std::span<std::reference_wrapper<Shader>> shaders) {
@@ -43,6 +44,7 @@ namespace gl {
         glAttachShader(m_id, shader.get().id());
       }
       glLinkProgram(m_id);
+      handleLinkFail();
     }
 
     void bind() const { glUseProgram(m_id); }

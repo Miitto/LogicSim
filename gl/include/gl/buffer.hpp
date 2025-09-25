@@ -35,12 +35,19 @@ namespace gl {
 
     inline const gl::Id& id() const { return m_id; }
     inline void bind(GLenum target) const { glBindBuffer(target, m_id); }
+    inline void bindBase(GLenum target, GLuint index) const {
+      glBindBufferBase(target, index, m_id);
+    }
+    inline void bindRange(GLenum target, GLuint index, GLuint offset,
+                          GLuint size) const {
+      glBindBufferRange(target, index, m_id, offset, size);
+    }
     static void unbind(GLenum target);
 
-    inline void* map(GLbitfield flags, GLuint offset = 0,
-                     GLuint length = std::numeric_limits<GLuint>::max());
-    inline void unmap();
+    void* map(GLbitfield flags, GLuint offset = 0,
+              GLuint length = std::numeric_limits<GLuint>::max());
+    void unmap();
 
-    inline void* getMapping() const { return m_mapping; }
+    void* getMapping() const;
   };
 } // namespace gl

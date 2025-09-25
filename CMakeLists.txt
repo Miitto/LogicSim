@@ -35,7 +35,6 @@ project(LogicSim VERSION 0.1.0 LANGUAGES CXX)
 add_subdirectory(logger)
 add_subdirectory(gl)
 add_subdirectory(src)
-add_subdirectory(renderer)
 
 include(enableWarnings)
 ENABLE_WARNINGS(${PROJECT_NAME})

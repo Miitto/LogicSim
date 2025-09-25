@@ -12,8 +12,18 @@ namespace gl {
                              bool normalize, GLuint offset,
                              std::optional<GLuint> bufferIndex) {
     glEnableVertexArrayAttrib(m_id, index);
-    glVertexArrayAttribFormat(m_id, index, numComponents, type,
-                              normalize ? GL_TRUE : GL_FALSE, offset);
+    switch (type) {
+    case GL_INT:
+    case GL_UNSIGNED_INT: {
+      glVertexArrayAttribIFormat(m_id, index, numComponents, type, offset);
+      break;
+    }
+    default: {
+      glVertexArrayAttribFormat(m_id, index, numComponents, type,
+                                normalize ? GL_TRUE : GL_FALSE, offset);
+      break;
+    }
+    }
     if (bufferIndex.has_value()) {
       glVertexArrayAttribBinding(m_id, index, bufferIndex.value());
     }

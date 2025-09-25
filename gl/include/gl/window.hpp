@@ -63,5 +63,18 @@ namespace gl {
     void setKeyCallback(GLFWkeyfun callback) {
       glfwSetKeyCallback(window, callback);
     }
+    void setCursorPosCallback(GLFWcursorposfun callback) {
+      glfwSetCursorPosCallback(window, callback);
+    }
+    void setMouseButtonCallback(GLFWmousebuttonfun callback) {
+      glfwSetMouseButtonCallback(window, callback);
+    }
+
+    struct Size {
+      int width;
+      int height;
+    };
+
+    Size size() const;
   };
 } // namespace gl
