@@ -205,8 +205,8 @@ int main() {
       if (!showTriangle) {
         ImGui::ColorEdit3("Brush Color", &brushColor.r);
         ImGui::SliderFloat("Brush Radius", &brushRadius, 1.f, 20.f);
-        ImGui::SliderInt("Ray Count", (int*)&rayCount, 1, 16);
-        ImGui::SliderInt("Max Steps", (int*)&maxSteps, 1, 512);
+        ImGui::SliderInt("Ray Count", (int*)&rayCount, 1, 128);
+        ImGui::SliderInt("Max Steps", (int*)&maxSteps, 1, 64);
 
         ImGui::SliderInt("JFA Passes", (int*)&jfaPasses, 0, maxJfaPasses);
         ImGui::Checkbox("Show JFA", &showJfa);
