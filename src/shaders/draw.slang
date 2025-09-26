@@ -1,7 +1,10 @@
+import "./include/uv.slang";
+
 struct Draw {
     float2 from;
     float2 to;
     float4 color;
+    float2 resolution;
 };
 
 ParameterBlock<Draw> draw;
@@ -19,9 +22,8 @@ struct vOut {
 vOut vert(vIn in) {
   vOut output;
   output.position = float4(in.position, 0.0, 1.0);
-  var uv = in.position;
-  uv.y *= -1;
-  output.uv = (uv + 1) / 2;
+  output.uv = uvFromPosition(in.position);
+  output.uv *= draw.resolution;
   return output;
 }
 

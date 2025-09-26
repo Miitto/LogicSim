@@ -40,7 +40,7 @@ void Input::onMouseMove(double x, double y) {
     m_mouse.position = {x, y};
     return;
   }
-  m_mouse.delta = {x - m_mouse.position.x, y - m_mouse.position.y};
+  m_mouse.delta += glm::vec2{x - m_mouse.position.x, y - m_mouse.position.y};
   m_mouse.position = {x, y};
 }
 
@@ -63,12 +63,18 @@ void Input::onMouseButton(int button, int action) {
 
 void Input::frameEnd() {
   m_mouse.delta = {0, 0};
-  for (auto& [key, state] : keyState) {
+  std::vector<int> keys;
+  keys.reserve(keyState.size());
+  for (auto [key, state] : keyState) {
     if (state == KeyState::Pressed) {
       state = KeyState::PressedRepeat;
     } else if (state == KeyState::Released) {
-      keyState.erase(key);
+      keys.push_back(key);
     }
+  }
+
+  for (auto& key : keys) {
+    keyState.erase(key);
   }
 }
 

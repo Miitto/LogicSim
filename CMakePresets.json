@@ -15,7 +15,7 @@
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "clangTidyChecks": "llvm-include-order, clang-analyzer-*",
+          "clangTidyChecks": "llvm-include-order clang-analyzer-* modernize-* bugprone-* cppcoreguidelines-*",
           "enableMicrosoftCodeAnalysis": true,
           "enableClangTidyCodeAnalysis": true
         }

@@ -34,8 +34,8 @@ namespace gl {
         throw std::runtime_error("Framebuffer is not complete");
       }
     }
-    void blit(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
-              GLint dstY0, GLint dstX1, GLint dstY1, GLuint target = 0,
+    void blit(GLuint target, GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
+              GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
               GLbitfield mask = 0, GLenum filter = 0) const {
       glBlitNamedFramebuffer(m_id, target, srcX0, srcY0, srcX1, srcY1, dstX0,
                              dstY0, dstX1, dstY1, mask, filter);
