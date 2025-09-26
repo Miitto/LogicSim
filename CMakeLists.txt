@@ -30,7 +30,7 @@ else()
   message(STATUS "sccache not found, using default compiler")
 endif()
 
-project(LogicSim VERSION 0.1.0 LANGUAGES CXX)
+project(RadianceCascadesGL VERSION 0.1.0 LANGUAGES CXX)
 
 add_subdirectory(logger)
 add_subdirectory(gl)

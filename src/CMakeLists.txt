@@ -1,19 +1,19 @@
 cmake_minimum_required(VERSION 3.15..4.0)
 
-add_executable(LogicSim)
+add_executable(${PROJECT_NAME})
 
-target_link_libraries(LogicSim PRIVATE logger::logger)
+target_link_libraries(${PROJECT_NAME} PRIVATE logger::logger)
 
-target_link_libraries(LogicSim PRIVATE gl::gl)
+target_link_libraries(${PROJECT_NAME} PRIVATE gl::gl)
 
 
-target_sources(LogicSim PRIVATE
+target_sources(${PROJECT_NAME} PRIVATE
  main.cpp
  logger.cpp
  input.cpp
 )
 
- target_precompile_headers(LogicSim PRIVATE
+ target_precompile_headers(${PROJECT_NAME} PRIVATE
   <vector>
   <string>
   <array>
@@ -23,4 +23,4 @@ target_sources(LogicSim PRIVATE
  )
 
 add_subdirectory(shaders)
-COPY_SHADERS(LogicSim)
+COPY_SHADERS(${PROJECT_NAME})

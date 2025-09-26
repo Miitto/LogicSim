@@ -48,19 +48,21 @@ namespace gl {
     }
   }
 
-  void Program::handleLinkFail() {
+  bool Program::handleLinkFail(const gl::Id&& id) {
     GLint success;
-    glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+    glGetProgramiv(id, GL_LINK_STATUS, &success);
     if (!success) {
       GLint logLength;
-      glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &logLength);
+      glGetProgramiv(id, GL_INFO_LOG_LENGTH, &logLength);
       if (logLength <= 0)
-        return;
+        return false;
       std::string infoLog(logLength, '\0');
-      glGetProgramInfoLog(m_id, logLength, nullptr, infoLog.data());
+      glGetProgramInfoLog(id, logLength, nullptr, infoLog.data());
       gl::Logger::error("Program linking failed: {}", infoLog);
-      glDeleteProgram(m_id);
-      m_id = 0;
+      glDeleteProgram(id);
+      return true;
     }
+
+    return false;
   }
 } // namespace gl

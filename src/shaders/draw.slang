@@ -9,20 +9,9 @@ struct Draw {
 
 ParameterBlock<Draw> draw;
 
-struct vIn {
-    float2 position : POSITION;
-};
-
-struct vOut {
-    float4 position : SV_Position;
-    float2 uv;
-}
-
 [shader("vertex")]
-vOut vert(vIn in) {
-  vOut output;
-  output.position = float4(in.position, 0.0, 1.0);
-  output.uv = uvFromPosition(in.position);
+BasicVOut vert(BasicVIn in) {
+  var output = basicVertex(in);
   output.uv *= draw.resolution;
   return output;
 }
@@ -37,10 +26,16 @@ float sdfLineSquared(float2 pos, float2 from, float2 to) {
 }
 
 [shader("fragment")]
-float4 frag(vOut input) : SV_Target {
+float4 frag(BasicVOut input) : SV_Target {
   float2 coord = input.uv;
 
-  if (sdfLineSquared(coord, draw.from, draw.to) > (draw.color.w * draw.color.w)) {
+  var from = draw.from;
+  from.y = draw.resolution.y - from.y;
+
+  var to = draw.to;
+  to.y = draw.resolution.y - to.y;
+
+  if (sdfLineSquared(coord, from, to) > (draw.color.w * draw.color.w)) {
       discard;
   }
 

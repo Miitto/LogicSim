@@ -29,34 +29,34 @@ namespace gl {
   class Program {
     gl::Id m_id = 0;
 
-    void handleLinkFail();
+    static bool handleLinkFail(const gl::Id&& id);
+
+    Program(gl::Id&& id) : m_id(std::move(id)) {}
 
   public:
     template <typename... Shaders>
       requires(std::is_same<Shaders, Shader>::value && ...)
-    inline Program(Shaders&... shaders) {
-      m_id = glCreateProgram();
-      (glAttachShader(m_id, shaders.id()), ...);
-      glLinkProgram(m_id);
-      handleLinkFail();
+    inline static std::optional<Program> create(Shaders&... shaders) {
+      GLuint id = glCreateProgram();
+      (glAttachShader(id, shaders.id()), ...);
+      glLinkProgram(id);
+      if (handleLinkFail(id)) {
+
+        return std::nullopt;
+      }
+      return Program(gl::Id(id));
     }
 
-    inline Program(std::span<Shader>&& shaders) {
-      m_id = glCreateProgram();
+    inline static std::optional<Program> create(std::span<Shader>&& shaders) {
+      GLuint id = glCreateProgram();
       for (const auto& shader : shaders) {
-        glAttachShader(m_id, shader.id());
+        glAttachShader(id, shader.id());
       }
-      glLinkProgram(m_id);
-      handleLinkFail();
-    }
-
-    inline Program(std::span<std::reference_wrapper<Shader>> shaders) {
-      m_id = glCreateProgram();
-      for (const auto& shader : shaders) {
-        glAttachShader(m_id, shader.get().id());
+      glLinkProgram(id);
+      if (handleLinkFail(id)) {
+        return std::nullopt;
       }
-      glLinkProgram(m_id);
-      handleLinkFail();
+      return Program(gl::Id(id));
     }
 
     void bind() const { glUseProgram(m_id); }
@@ -74,7 +74,11 @@ namespace gl {
         shaders.push_back(std::move(shaderOpt.value()));
       }
 
-      return Program(shaders);
+      auto programOpt = create(shaders);
+      if (!programOpt.has_value()) {
+        return std::unexpected("Failed to link program");
+      }
+      return std::move(programOpt.value());
     }
   };
 } // namespace gl
