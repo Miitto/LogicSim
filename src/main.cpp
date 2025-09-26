@@ -140,14 +140,14 @@ int main() {
   auto& jumpFloodProgram = jumpFloodProgramOpt.value();
 
   gl::Texture flipFlopOne{};
-  flipFlopOne.storage(1, GL_RGB32F, {WINDOW_WIDTH, WINDOW_HEIGHT});
+  flipFlopOne.storage(1, GL_RGBA8, {WINDOW_WIDTH, WINDOW_HEIGHT});
   flipFlopOne.setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   flipFlopOne.setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   gl::Framebuffer flipFlopOneFbo;
   flipFlopOneFbo.attachTexture(GL_COLOR_ATTACHMENT0, flipFlopOne);
 
   gl::Texture flipFlopTwo{};
-  flipFlopTwo.storage(1, GL_RGB32F, {WINDOW_WIDTH, WINDOW_HEIGHT});
+  flipFlopTwo.storage(1, GL_RGBA8, {WINDOW_WIDTH, WINDOW_HEIGHT});
   flipFlopTwo.setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   flipFlopOne.setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   gl::Framebuffer flipFlopTwoFbo;
@@ -171,10 +171,15 @@ int main() {
   };
 
   uint32_t rayCount = 8;
-  uint32_t maxSteps = 256;
+  uint32_t maxSteps = 32;
   uint32_t jfaPasses =
       static_cast<uint32_t>(ceil(log2(std::max(WINDOW_WIDTH, WINDOW_HEIGHT))));
   uint32_t maxJfaPasses = jfaPasses;
+
+  gl::Texture jfaResult{};
+  jfaResult.storage(1, GL_RGBA8, {WINDOW_WIDTH, WINDOW_HEIGHT});
+  gl::Framebuffer jfaResultFbo;
+  jfaResultFbo.attachTexture(GL_COLOR_ATTACHMENT0, jfaResult);
 #pragma endregion
 #pragma endregion
 
@@ -292,7 +297,7 @@ int main() {
 #pragma endregion
 
 #pragma region JFA
-      if (showJfa && jfaPasses != 0) {
+      if (jfaPasses != 0) {
         jumpFloodProgram.bind();
         fullscreenVao.bind();
 
@@ -323,24 +328,25 @@ int main() {
           }
         }
       }
-#pragma endregion
       gl::Framebuffer::unbind();
 
-      if (showJfa) {
-#pragma region Show UV/JFA
-        if (jfaPasses % 2 == 1 || jfaPasses == 0) {
-          flipFlopOneFbo.blit(0, 0, 0, size.width, size.height, 0, 0,
-                              size.width, size.height, GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
-        } else {
-          flipFlopTwoFbo.blit(0, 0, 0, size.width, size.height, 0, 0,
-                              size.width, size.height, GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
-        }
+      if (jfaPasses % 2 == 1 || jfaPasses == 0) {
+        flipFlopOneFbo.blit(jfaResultFbo.id(), 0, 0, size.width, size.height, 0,
+                            0, size.width, size.height, GL_COLOR_BUFFER_BIT,
+                            GL_NEAREST);
+      } else {
+        flipFlopTwoFbo.blit(jfaResultFbo.id(), 0, 0, size.width, size.height, 0,
+                            0, size.width, size.height, GL_COLOR_BUFFER_BIT,
+                            GL_NEAREST);
+      }
 #pragma endregion
+      if (showJfa) {
+        jfaResultFbo.blit(0, 0, 0, size.width, size.height, 0, 0, size.width,
+                          size.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
       } else {
 #pragma region Naive Raymarch
         drawTexture.bind(0);
+        jfaResult.bind(1);
         fullscreenVao.bind();
         naiveProgram.bind();
 
