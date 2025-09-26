@@ -184,7 +184,6 @@ int main() {
 
   bool showTriangle = false;
   bool showJfa = false;
-  bool showToUv = false;
 
   while (!window.shouldClose()) {
     gl::Window::pollEvents();
@@ -208,8 +207,7 @@ int main() {
         ImGui::SliderInt("Ray Count", (int*)&rayCount, 1, 16);
         ImGui::SliderInt("Max Steps", (int*)&maxSteps, 1, 512);
 
-        ImGui::SliderInt("JFA Passes", (int*)&jfaPasses, 1, maxJfaPasses);
-        ImGui::Checkbox("Show ToUV", &showToUv);
+        ImGui::SliderInt("JFA Passes", (int*)&jfaPasses, 0, maxJfaPasses);
         ImGui::Checkbox("Show JFA", &showJfa);
 
         ImGui::Button("Clear");
@@ -298,7 +296,7 @@ int main() {
 #pragma endregion
 
 #pragma region JFA
-      if (showJfa && !showToUv) {
+      if (showJfa && jfaPasses != 0) {
         jumpFloodProgram.bind();
         fullscreenVao.bind();
         jfaParamsUbo.bindBase(GL_UNIFORM_BUFFER, 0);
@@ -332,9 +330,9 @@ int main() {
 #pragma endregion
       gl::Framebuffer::unbind();
 
-      if (showJfa || showToUv) {
+      if (showJfa) {
 #pragma region Show UV/JFA
-        if (jfaPasses % 2 == 1 || showToUv) {
+        if (jfaPasses % 2 == 1 || jfaPasses == 0) {
           flipFlopOneFbo.blit(0, 0, 0, size.width, size.height, 0, 0,
                               size.width, size.height, GL_COLOR_BUFFER_BIT,
                               GL_NEAREST);
