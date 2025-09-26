@@ -119,6 +119,7 @@ int main() {
   }
   auto& naiveProgram = naiveProgramOpt.value();
 
+#pragma region JFA Setup
   auto toUvProgramOpt =
       gl::Program::fromFiles({{"toUv_vert.glsl", gl::Shader::VERTEX},
                               {"toUv_frag.glsl", gl::Shader::FRAGMENT}});
@@ -169,17 +170,12 @@ int main() {
     glm::vec2 offset;
   };
 
-  gl::Buffer jfaParamsUbo(sizeof(JfaParams), nullptr,
-                          GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                              GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-  auto jfaMapping = jfaParamsUbo.map(GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
-                                     GL_MAP_COHERENT_BIT);
-
   uint32_t rayCount = 8;
   uint32_t maxSteps = 256;
   uint32_t jfaPasses =
       static_cast<uint32_t>(ceil(log2(std::max(WINDOW_WIDTH, WINDOW_HEIGHT))));
   uint32_t maxJfaPasses = jfaPasses;
+#pragma endregion
 #pragma endregion
 
   bool showTriangle = false;
@@ -299,7 +295,6 @@ int main() {
       if (showJfa && jfaPasses != 0) {
         jumpFloodProgram.bind();
         fullscreenVao.bind();
-        jfaParamsUbo.bindBase(GL_UNIFORM_BUFFER, 0);
 
         gl::Texture* inTex = &flipFlopOne;
         gl::Framebuffer* output = &flipFlopTwoFbo;
@@ -311,10 +306,11 @@ int main() {
           JfaParams jfaParams{
               .offset = offset * oneOverResolution,
           };
+          gl::Buffer jfaParamsBuf(sizeof(JfaParams), &jfaParams);
 
-          memcpy(jfaMapping, &jfaParams, sizeof(JfaParams));
           inTex->bind(0);
           output->bind();
+          jfaParamsBuf.bindBase(GL_UNIFORM_BUFFER, 0);
 
           glDrawArrays(GL_TRIANGLES, 0, 3);
 
