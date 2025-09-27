@@ -117,9 +117,9 @@ public:
     }
     m_constantsUbo.bindBase(GL_UNIFORM_BUFFER, 0);
 
-    for (int i = 2; i >= 1; --i) {
+    for (uint32_t i = 2; i >= 1; --i) {
       uint32_t rayCount = static_cast<uint32_t>(pow(m_baseRayCount, i));
-      FlatlandRcParams params(rayCount, i == 1);
+      FlatlandRcParams params(rayCount, i == m_cascadeIndex + 1);
       auto mapping = m_paramsUbo[i - 1].getMapping();
       std::memcpy(mapping, &params, sizeof(FlatlandRcParams));
       m_paramsUbo[i - 1].bindBase(GL_UNIFORM_BUFFER, 1);
@@ -140,6 +140,6 @@ public:
     auto& cascadeFbo =
         m_cascadeIndex == 0 ? m_result.fbo : m_flipFlops[m_cascadeIndex].fbo;
     cascadeFbo.blit(0, 0, 0, size.width, size.height, 0, 0, size.width,
-                    size.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                    size.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
   }
 };

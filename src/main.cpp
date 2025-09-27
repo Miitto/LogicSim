@@ -165,7 +165,7 @@ int main() {
         ImGui::Text("Raymarch Settings");
         ImGui::SliderInt("JFA Passes", (int*)&jfa.passes(), 0, jfa.maxPasses());
 
-        if (renderMode != RenderMode::JFA ||
+        if (renderMode != RenderMode::JFA &&
             renderMode != RenderMode::Distance) {
           ImGui::SliderInt("Ray Count", (int*)&rayCount, 4,
                            renderMode == RenderMode::Naive ? 128 : 64);

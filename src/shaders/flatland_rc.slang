@@ -91,7 +91,7 @@ float4 frag(BasicVOut in) : SV_Target {
 
             if (outOfUv(sampleUv)) break;
 
-            if (dist < minStepSize) {
+            if (dist <= minStepSize) {
                 float4 colorSample = sceneTex.Sample(sampleUv);
                 radDelta += float4(pow(colorSample.rgb, float3(srgb)), colorSample.a);
                 break;
@@ -121,7 +121,7 @@ float4 frag(BasicVOut in) : SV_Target {
         radiance += radDelta;
     }
 
-    float3 final = (radiance.rgb * oneOverRayCount);
+    float3 final = (radiance.rgb / float(constants.baseRayCount));
 
     return float4(!params.isLastLevel ? final : pow(final, float3(1.0 / srgb)), 1.0);
 }
