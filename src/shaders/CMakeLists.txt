@@ -6,6 +6,8 @@ compile_shader(shaders GLSL ${PROJECT_NAME} SOURCES
   naive
   toUv
   jumpflood
+  flatland_rc
   INCLUDES
   uv
+  raymarching
 )

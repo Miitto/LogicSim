@@ -73,6 +73,10 @@ namespace gl {
     struct Size {
       int width;
       int height;
+
+      friend bool operator==(const Size& a, const Size& b) {
+        return a.width == b.width && a.height == b.height;
+      }
     };
 
     Size size() const;

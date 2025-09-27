@@ -11,6 +11,7 @@ target_sources(${PROJECT_NAME} PRIVATE
  main.cpp
  logger.cpp
  input.cpp
+ jfa.cpp
 )
 
  target_precompile_headers(${PROJECT_NAME} PRIVATE
