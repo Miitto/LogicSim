@@ -7,12 +7,12 @@ struct TexFbo {
   gl::Framebuffer fbo;
 };
 
-template <size_t num> class FlipFlops {
-  std::array<TexFbo, num> buffers;
+class FlipFlops {
+  std::vector<TexFbo> buffers;
 
 public:
-  FlipFlops(TexFbo&& items...) : buffers(std::forward(items...)) {}
-  FlipFlops(GLenum internalFormat, const gl::Window::Size& size) {
+  FlipFlops(GLenum internalFormat, const gl::Window::Size& size, size_t num) {
+    buffers.resize(num);
     for (size_t i = 0; i < num; i++) {
       buffers[i].tex.storage(1, internalFormat, {size.width, size.height});
       buffers[i].fbo.attachTexture(GL_COLOR_ATTACHMENT0, buffers[i].tex);

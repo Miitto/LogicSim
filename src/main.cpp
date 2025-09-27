@@ -68,7 +68,7 @@ int main() {
 
   gl::gui::Context gui(window);
 
-  glm::vec4 clearColor(.2f, .2f, .2f, 1.f);
+  glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
   gl::Buffer fullscreenVbo(static_cast<GLuint>(fullscreenTriangle.size()) *
@@ -78,9 +78,8 @@ int main() {
   fullscreenVao.bindVertexBuffer(0, fullscreenVbo.id(), 0, sizeof(BasicVertex));
   fullscreenVao.attribFormat(0, 2, GL_FLOAT, false, 0, 0);
 
-  uint32_t rayCount = 4;
+  uint32_t rayCount = 16;
   uint32_t maxSteps = 32;
-  float intervalStep = 0.125f;
 
   auto oldWindowSize = window.size();
   glm::vec2 fsize = {static_cast<float>(oldWindowSize.width),
@@ -114,8 +113,8 @@ int main() {
   }
   auto& naive = naiveOpt.value();
 
-  auto flatlandOpt = FlatlandRc::create(fullscreenVao, rayCount, maxSteps,
-                                        intervalStep, oldWindowSize);
+  auto flatlandOpt =
+      FlatlandRc::create(fullscreenVao, rayCount, maxSteps, oldWindowSize);
   if (!flatlandOpt.has_value()) {
     Logger::error("Failed to create flatland radiance cascades");
     return -1;
@@ -167,13 +166,15 @@ int main() {
 
         if (renderMode != RenderMode::JFA &&
             renderMode != RenderMode::Distance) {
-          ImGui::SliderInt("Ray Count", (int*)&rayCount, 4,
-                           renderMode == RenderMode::Naive ? 128 : 64);
+          if (ImGui::SliderInt("Ray Count", (int*)&rayCount, 4,
+                               renderMode == RenderMode::Naive ? 128 : 64)) {
+            flatland.updateMaxCascades(fsize);
+          }
           ImGui::SliderInt("Max Steps", (int*)&maxSteps, 1, 64);
 
           if (renderMode != RenderMode::Naive) {
-            ImGui::SliderFloat("Interval Step", &intervalStep, 0.01f, 2.f);
-            ImGui::SliderInt("Cascade", (int*)&flatland.cascadeIndex(), 0, 1);
+            ImGui::SliderInt("Cascade", (int*)&flatland.cascadeIndex(), 0,
+                             flatland.maxCascades() - 1);
           }
         }
 

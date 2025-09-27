@@ -15,7 +15,7 @@ class Jfa {
 
   Programs m_programs;
 
-  FlipFlops<2> m_flipFlops;
+  FlipFlops m_flipFlops;
 
   std::vector<gl::Buffer> m_ubos;
 
@@ -36,9 +36,9 @@ class Jfa {
   uint32_t m_jfaPasses;
   uint32_t m_maxJfaPasses;
 
-  Jfa(const gl::Vao& fullscreenVao, Programs&& programs,
-      FlipFlops<2>&& flipFlops, std::vector<gl::Buffer> ubos,
-      JfaResult&& result, DistanceResult&& distanceResult, uint32_t jfaPasses,
+  Jfa(const gl::Vao& fullscreenVao, Programs&& programs, FlipFlops&& flipFlops,
+      std::vector<gl::Buffer> ubos, JfaResult&& result,
+      DistanceResult&& distanceResult, uint32_t jfaPasses,
       uint32_t maxJfaPasses, const gl::Window& window)
       : m_fullscreenVao(fullscreenVao), m_programs(std::move(programs)),
         m_flipFlops(std::move(flipFlops)), m_ubos(std::move(ubos)),
@@ -74,7 +74,7 @@ public:
                                    const gl::Window& window);
 
   void resize(const gl::Window::Size& size) {
-    m_flipFlops = FlipFlops<2>(GL_RGBA32F, size);
+    m_flipFlops = FlipFlops(GL_RGBA32F, size, 2);
 
     m_result = JfaResult{};
     m_result.texture.storage(1, GL_RGBA32F, {size.width, size.height});

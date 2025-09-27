@@ -5,19 +5,11 @@ struct Constants {
     float2 resolution;
     uint baseRayCount;
     uint maxSteps;
-    float intervalStep;
+    uint cascadeCount;
 }
 
 struct Params {
-    uint pack;
-
-    property uint rayCount {
-        get { return pack & ~(1 << 31); }
-    }
-
-    property bool isLastLevel {
-        get { return (pack & (1 << 31)) != 0; }
-    }
+    uint currentCascade;
 }
 
 layout(binding = 0) ConstantBuffer<Constants> constants;
@@ -36,17 +28,25 @@ BasicVOut vert(BasicVIn in) {
 
 [shader("fragment")]
 float4 frag(BasicVOut in) : SV_Target {
+    float sqrtBaseRayCount = sqrt(float(constants.baseRayCount));
+    float shortestSide = min(constants.resolution.x, constants.resolution.y);
+    float2 scale = shortestSide / constants.resolution;
+
+    float cascadeIndex = float(params.currentCascade);
+
+    float intervalStart = cascadeIndex == 0.0 ? 0.0 : pow(constants.baseRayCount, cascadeIndex - 1.0) / shortestSide;
+    float intervalLength = pow(constants.baseRayCount, cascadeIndex) / shortestSide;
+
+    float rayCount = pow(constants.baseRayCount, cascadeIndex + 1.0);
+    float spacing = pow(sqrtBaseRayCount, cascadeIndex);
+
     float2 coord = floor(in.uv * constants.resolution);
     float4 radiance = float4(0.0);
 
-    bool isFirstLevel = params.rayCount == constants.baseRayCount;
+    bool isFirstLevel = rayCount == constants.baseRayCount;
 
-    float sqrtBaseRayCount = sqrt(float(constants.baseRayCount));
-    float oneOverRayCount = 1.0 / float(params.rayCount);
+    float oneOverRayCount = 1.0 / rayCount;
     float angleStepSize = TAU * oneOverRayCount;
-
-    // Space between probes
-    float spacing = isFirstLevel ? 1.0 : sqrtBaseRayCount;
 
     // Number of probes in each dimension
     float2 size = floor(constants.resolution / spacing);
@@ -57,8 +57,6 @@ float4 frag(BasicVOut in) : SV_Target {
     // Which group of rays are we in?
     float2 rayPos = floor(coord / size);
 
-    float intervalStart = isFirstLevel ? 0.0 : constants.intervalStep;
-    float intervalEnd = isFirstLevel ? constants.intervalStep : sqrt(2.0);
 
     // Center of this probe
     float2 probeCenter = (probeRelativePosition + 0.5) * spacing;
@@ -67,7 +65,6 @@ float4 frag(BasicVOut in) : SV_Target {
     float baseIndex = float(constants.baseRayCount) * (rayPos.x + (spacing * rayPos.y));
 
     float2 oneOverRes = 1.0 / constants.resolution;
-    float2 scale = min(constants.resolution.x, constants.resolution.y) * oneOverRes;
 
     float minStepSize = min(oneOverRes.x, oneOverRes.y) * 0.5;
 
@@ -98,19 +95,20 @@ float4 frag(BasicVOut in) : SV_Target {
             }
 
             traveled += dist;
-            if (traveled >= intervalEnd) break;
+            if (traveled >= intervalLength) break;
         }
 
         // Only merge on non-opaque areas
-        if (isFirstLevel && radDelta.a == 0.0) {
-          // sqrtBaseRayCount is the spacing between probes
+        if (params.currentCascade < constants.cascadeCount - 1 && radDelta.a == 0.0) {
+          float upperSpacing = pow(sqrtBaseRayCount, cascadeIndex + 1.0);
           // Grid of probes
-          float2 upperSize = floor(constants.resolution / sqrtBaseRayCount);
+          float2 upperSize = floor(constants.resolution / upperSpacing);
           // Position of this probe
-          float2 upperPosition = float2(index % sqrtBaseRayCount, floor(index / sqrtBaseRayCount)) * upperSize;
+          float2 upperPosition = float2(index % upperSpacing, floor(index / upperSpacing)) * upperSize;
 
           float2 offset = (probeRelativePosition + 0.5) / sqrtBaseRayCount;
-          float2 upperUv = (upperPosition + offset) / constants.resolution;
+          float2 clamped = clamp(offset, float2(0.5), upperSize - 0.5);
+          float2 upperUv = (upperPosition + clamped) / constants.resolution;
 
           float4 upperSample = lastTex.Sample(upperUv);
 
@@ -123,5 +121,5 @@ float4 frag(BasicVOut in) : SV_Target {
 
     float3 final = (radiance.rgb / float(constants.baseRayCount));
 
-    return float4(!params.isLastLevel ? final : pow(final, float3(1.0 / srgb)), 1.0);
+    return float4(params.currentCascade != 0 ? final : pow(final, float3(1.0 / srgb)), 1.0);
 }

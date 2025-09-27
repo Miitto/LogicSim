@@ -74,7 +74,7 @@ std::optional<Jfa> Jfa::create(const gl::Vao& fullscreenVao,
         .fbo = std::move(distanceResultFbo),
     };
 
-    FlipFlops<2> flipFlops(GL_RGBA32F, size);
+    FlipFlops flipFlops(GL_RGBA32F, size, 2);
 
     return Jfa(fullscreenVao, std::move(programs), std::move(flipFlops),
                std::move(ubos), std::move(result), std::move(distanceRes),
