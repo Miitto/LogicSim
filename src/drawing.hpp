@@ -47,7 +47,7 @@ public:
     }
     auto& drawProgram = drawProgramOpt.value();
     gl::Texture drawTexture{};
-    drawTexture.storage(1, GL_RGBA8, {size.width, size.height});
+    drawTexture.storage(1, GL_RGBA32F, {size.width, size.height});
     gl::Framebuffer drawFbo;
     drawFbo.attachTexture(GL_COLOR_ATTACHMENT0, drawTexture);
 
@@ -68,7 +68,7 @@ public:
     auto framebufferSize = m_texture.size();
     Logger::info("Resizing framebuffer to {}x{}", size.width, size.height);
     gl::Texture newTexture{};
-    newTexture.storage(1, GL_RGBA8, {size.width, size.height});
+    newTexture.storage(1, GL_RGBA32F, {size.width, size.height});
     gl::Framebuffer newFbo{};
     newFbo.attachTexture(GL_COLOR_ATTACHMENT0, newTexture);
 

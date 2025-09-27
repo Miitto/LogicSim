@@ -24,6 +24,16 @@ std::optional<Jfa> Jfa::create(const gl::Vao& fullscreenVao,
     }
     auto& jumpFloodProgram = jumpFloodProgramOpt.value();
 
+    auto distanceProgramOpt =
+        gl::Program::fromFiles({{"distance_vert.glsl", gl::Shader::VERTEX},
+                                {"distance_frag.glsl", gl::Shader::FRAGMENT}});
+    if (!distanceProgramOpt.has_value()) {
+      Logger::error("Failed to load distance program: {}",
+                    distanceProgramOpt.error());
+      return std::nullopt;
+    }
+    auto& distanceProgram = distanceProgramOpt.value();
+
     uint32_t jfaPasses =
         static_cast<uint32_t>(ceil(log2(std::max(size.width, size.height))));
     uint32_t maxJfaPasses = jfaPasses;
@@ -41,10 +51,11 @@ std::optional<Jfa> Jfa::create(const gl::Vao& fullscreenVao,
     Programs programs{
         .toUv = std::move(toUvProgram),
         .jumpFlood = std::move(jumpFloodProgram),
+        .distance = std::move(distanceProgram),
     };
 
     gl::Texture jfaResult{};
-    jfaResult.storage(1, GL_RGBA8, {size.width, size.height});
+    jfaResult.storage(1, GL_RGBA32F, {size.width, size.height});
     gl::Framebuffer jfaResultFbo;
     jfaResultFbo.attachTexture(GL_COLOR_ATTACHMENT0, jfaResult);
 
@@ -53,10 +64,20 @@ std::optional<Jfa> Jfa::create(const gl::Vao& fullscreenVao,
         .fbo = std::move(jfaResultFbo),
     };
 
-    FlipFlops<2> flipFlops(GL_RGBA8, size);
+    gl::Texture distanceResult{};
+    distanceResult.storage(1, GL_RGBA32F, {size.width, size.height});
+    gl::Framebuffer distanceResultFbo;
+    distanceResultFbo.attachTexture(GL_COLOR_ATTACHMENT0, distanceResult);
+
+    DistanceResult distanceRes{
+        .texture = std::move(distanceResult),
+        .fbo = std::move(distanceResultFbo),
+    };
+
+    FlipFlops<2> flipFlops(GL_RGBA32F, size);
 
     return Jfa(fullscreenVao, std::move(programs), std::move(flipFlops),
-               std::move(ubos), std::move(result), jfaPasses, maxJfaPasses,
-               window);
+               std::move(ubos), std::move(result), std::move(distanceRes),
+               jfaPasses, maxJfaPasses, window);
   }
 }

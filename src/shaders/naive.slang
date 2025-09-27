@@ -43,8 +43,7 @@ float4 frag(BasicVOut in) : SV_Target {
         bool hitSurface = false;
 
         for (uint step = 1; step < params.maxSteps; ++step) {
-            float2 nearestPoint = lookupTex.Sample(sampleUv).xy;
-            float dist = length(nearestPoint - sampleUv);
+            float dist = lookupTex.Sample(sampleUv).r;
 
             sampleUv += rayDir * dist;
 

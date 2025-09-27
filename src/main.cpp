@@ -23,7 +23,7 @@ std::array<BasicVertex, 3> fullscreenTriangle = {
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 800;
 
-enum RenderMode { Triangle, JFA, Naive, RadianceCascades };
+enum RenderMode { Triangle, JFA, Distance, Naive, RadianceCascades };
 template <> struct fmt::formatter<RenderMode> : formatter<std ::string_view> {
   auto format(const RenderMode& mode, format_context& ctx) const
       -> format_context::iterator {
@@ -34,6 +34,9 @@ template <> struct fmt::formatter<RenderMode> : formatter<std ::string_view> {
       break;
     case RenderMode::JFA:
       view = "JFA";
+      break;
+    case RenderMode::Distance:
+      view = "Distance";
       break;
     case RenderMode::Naive:
       view = "Naive";
@@ -77,6 +80,7 @@ int main() {
 
   uint32_t rayCount = 4;
   uint32_t maxSteps = 32;
+  float intervalStep = 0.125f;
 
   auto oldWindowSize = window.size();
   glm::vec2 fsize = {static_cast<float>(oldWindowSize.width),
@@ -110,8 +114,8 @@ int main() {
   }
   auto& naive = naiveOpt.value();
 
-  auto flatlandOpt =
-      FlatlandRc::create(fullscreenVao, rayCount, maxSteps, oldWindowSize);
+  auto flatlandOpt = FlatlandRc::create(fullscreenVao, rayCount, maxSteps,
+                                        intervalStep, oldWindowSize);
   if (!flatlandOpt.has_value()) {
     Logger::error("Failed to create flatland radiance cascades");
     return -1;
@@ -142,6 +146,8 @@ int main() {
 
         if (ImGui::Selectable("JFA", renderMode == RenderMode::JFA))
           renderMode = RenderMode::JFA;
+        if (ImGui::Selectable("Distance", renderMode == RenderMode::Distance))
+          renderMode = RenderMode::Distance;
         if (ImGui::Selectable("Naive", renderMode == RenderMode::Naive))
           renderMode = RenderMode::Naive;
         if (ImGui::Selectable("Radiance Cascades",
@@ -159,11 +165,14 @@ int main() {
         ImGui::Text("Raymarch Settings");
         ImGui::SliderInt("JFA Passes", (int*)&jfa.passes(), 0, jfa.maxPasses());
 
-        if (renderMode != RenderMode::JFA) {
-          ImGui::SliderInt("Ray Count", (int*)&rayCount, 1, 128);
+        if (renderMode != RenderMode::JFA ||
+            renderMode != RenderMode::Distance) {
+          ImGui::SliderInt("Ray Count", (int*)&rayCount, 4,
+                           renderMode == RenderMode::Naive ? 128 : 64);
           ImGui::SliderInt("Max Steps", (int*)&maxSteps, 1, 64);
 
           if (renderMode != RenderMode::Naive) {
+            ImGui::SliderFloat("Interval Step", &intervalStep, 0.01f, 2.f);
             ImGui::SliderInt("Cascade", (int*)&flatland.cascadeIndex(), 0, 1);
           }
         }
@@ -201,12 +210,16 @@ int main() {
         jfa.blitToMain(size);
         break;
       }
+      case RenderMode::Distance: {
+        jfa.blitDistanceToMain(size);
+        break;
+      }
       case RenderMode::Naive: {
-        naive.draw(drawing.texture(), jfa.result().texture, fsize);
+        naive.draw(drawing.texture(), jfa.distanceResult().texture, fsize);
         break;
       }
       case RenderMode::RadianceCascades: {
-        flatland.draw(drawing.texture(), jfa.result().texture, fsize);
+        flatland.draw(drawing.texture(), jfa.distanceResult().texture, fsize);
         flatland.blitToScreen(size);
         break;
       }
