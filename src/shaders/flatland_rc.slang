@@ -90,7 +90,7 @@ float4 frag(BasicVOut in) : SV_Target {
 
             if (dist <= minStepSize) {
                 float4 colorSample = sceneTex.Sample(sampleUv);
-                radDelta += float4(pow(colorSample.rgb, float3(srgb)), colorSample.a);
+                radDelta += colorSample;
                 break;
             }
 
