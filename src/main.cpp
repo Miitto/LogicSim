@@ -162,6 +162,10 @@ int main() {
         if (renderMode != RenderMode::JFA) {
           ImGui::SliderInt("Ray Count", (int*)&rayCount, 1, 128);
           ImGui::SliderInt("Max Steps", (int*)&maxSteps, 1, 64);
+
+          if (renderMode != RenderMode::Naive) {
+            ImGui::SliderInt("Cascade", (int*)&flatland.cascadeIndex(), 0, 1);
+          }
         }
 
         if (ImGui::Button("Clear Drawing")) {

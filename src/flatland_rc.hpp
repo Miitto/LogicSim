@@ -20,6 +20,8 @@ class FlatlandRc {
   const uint32_t& m_baseRayCount;
   const uint32_t& m_maxSteps;
 
+  uint32_t m_cascadeIndex = 0;
+
   FlatlandRc(const gl::Vao& fullscreenVao, gl::Program&& rcProgram,
              TexFbo&& result, std::vector<gl::Buffer>&& paramsUbo,
              FlipFlops<2>&& flipFlops, const uint32_t& rayCount,
@@ -36,6 +38,8 @@ public:
     uint32_t baseRayCount;
     uint32_t maxSteps;
   };
+
+  const uint32_t& cascadeIndex() const { return m_cascadeIndex; }
 
   static std::optional<FlatlandRc> create(const gl::Vao& fullscreenVao,
                                           const uint32_t& rayCount,
@@ -83,8 +87,6 @@ public:
 
     constexpr glm::vec2 clear(0.0);
 
-    int prev = 0;
-
     for (int i = 2; i >= 1; --i) {
       uint32_t rayCount = static_cast<uint32_t>(pow(m_baseRayCount, i));
       FlatlandRcParams params{
@@ -98,10 +100,9 @@ public:
       m_paramsUbo[i - 1].bindBase(GL_UNIFORM_BUFFER, 0);
 
       if (i > 1) {
-        m_flipFlops[prev].fbo.bind();
+        m_flipFlops[i - 1].fbo.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        m_flipFlops[prev].tex.bind(2);
-        prev = 1 - prev;
+        m_flipFlops[i - 1].tex.bind(2);
       } else {
         m_result.fbo.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -111,7 +112,9 @@ public:
   }
 
   void blitToScreen(const gl::Window::Size& size) {
-    m_result.fbo.blit(0, 0, 0, size.width, size.height, 0, 0, size.width,
-                      size.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    auto& cascadeFbo =
+        m_cascadeIndex == 0 ? m_result.fbo : m_flipFlops[m_cascadeIndex].fbo;
+    cascadeFbo.blit(0, 0, 0, size.width, size.height, 0, 0, size.width,
+                    size.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
   }
 };
