@@ -20,8 +20,8 @@ std::array<BasicVertex, 3> fullscreenTriangle = {
     BasicVertex{.position = {-1.0f, 3.0f}},
 };
 
-constexpr int WINDOW_WIDTH = 800;
-constexpr int WINDOW_HEIGHT = 800;
+constexpr int WINDOW_WIDTH = 1024;
+constexpr int WINDOW_HEIGHT = 1024;
 
 enum RenderMode { Triangle, JFA, Distance, Naive, RadianceCascades };
 template <> struct fmt::formatter<RenderMode> : formatter<std ::string_view> {
