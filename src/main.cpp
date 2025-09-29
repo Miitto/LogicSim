@@ -78,7 +78,7 @@ int main() {
   fullscreenVao.bindVertexBuffer(0, fullscreenVbo.id(), 0, sizeof(BasicVertex));
   fullscreenVao.attribFormat(0, 2, GL_FLOAT, false, 0, 0);
 
-  uint32_t rayCount = 16;
+  uint32_t rayCount = 4;
   uint32_t maxSteps = 32;
 
   auto oldWindowSize = window.size();

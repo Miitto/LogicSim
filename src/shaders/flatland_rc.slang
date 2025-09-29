@@ -26,6 +26,48 @@ BasicVOut vert(BasicVIn in) {
    return basicVertex(in);
 }
 
+void traceRay(float2 uv, float2 rayDirection, float intervalStart, float intervalLength, float minStepSize, float2 scale, inout float4 radDelta) {
+    float traveled = intervalStart;
+
+    // We tested uv already (we know we aren't an object), so skip step 0.
+    for (int step = 1; step < constants.maxSteps; step++) {
+        float dist = distanceTex.Sample(uv).r;
+
+        // Go the direction we're traveling
+        uv += rayDirection * dist * scale;
+
+        if (outOfUv(uv)) break;
+
+        if (dist <= minStepSize) {
+            float4 colorSample = sceneTex.Sample(uv);
+            radDelta += colorSample;
+            break;
+        }
+
+        traveled += dist;
+        if (traveled >= intervalLength) break;
+    }
+}
+
+void merge(float sqrtBaseRayCount, float cascadeIndex, float index, float2 probeRelativePosition, inout float4 radDelta) {
+  // Only merge on non-opaque areas
+  if (params.currentCascade < constants.cascadeCount - 1 && radDelta.a == 0.0) {
+    float upperSpacing = pow(sqrtBaseRayCount, cascadeIndex + 1.0);
+    // Grid of probes
+    float2 upperSize = floor(constants.resolution / upperSpacing);
+    // Position of this probe
+    float2 upperPosition = float2(index % upperSpacing, floor(index / upperSpacing)) * upperSize;
+
+    float2 offset = (probeRelativePosition + 0.5) / sqrtBaseRayCount;
+    float2 clamped = clamp(offset, float2(0.5), upperSize - 0.5);
+    float2 upperUv = (upperPosition + clamped) / constants.resolution;
+
+    float4 upperSample = lastTex.Sample(upperUv);
+
+    radDelta += upperSample;
+  }
+}
+
 [shader("fragment")]
 float4 frag(BasicVOut in) : SV_Target {
     float sqrtBaseRayCount = sqrt(float(constants.baseRayCount));
@@ -34,11 +76,17 @@ float4 frag(BasicVOut in) : SV_Target {
 
     float cascadeIndex = float(params.currentCascade);
 
+    float modifierHack = sqrtBaseRayCount / 2;
+
     float intervalStart = cascadeIndex == 0.0 ? 0.0 : pow(constants.baseRayCount, cascadeIndex - 1.0) / shortestSide;
     float intervalLength = pow(constants.baseRayCount, cascadeIndex) / shortestSide;
 
+    intervalStart *= modifierHack;
+    intervalLength *= modifierHack;
+
     float rayCount = pow(constants.baseRayCount, cascadeIndex + 1.0);
     float spacing = pow(sqrtBaseRayCount, cascadeIndex);
+
 
     float2 coord = floor(in.uv * constants.resolution);
     float4 radiance = float4(0.0);
@@ -79,42 +127,10 @@ float4 frag(BasicVOut in) : SV_Target {
         float4 radDelta = float4(0.0);
         float traveled = intervalStart;
 
-        // We tested uv already (we know we aren't an object), so skip step 0.
-        for (int step = 1; step < constants.maxSteps; step++) {
-            float dist = distanceTex.Sample(sampleUv).r;
+        traceRay(sampleUv, rayDirection, intervalStart, intervalLength, minStepSize, scale, radDelta);
 
-            // Go the direction we're traveling
-            sampleUv += rayDirection * dist * scale;
-
-            if (outOfUv(sampleUv)) break;
-
-            if (dist <= minStepSize) {
-                float4 colorSample = sceneTex.Sample(sampleUv);
-                radDelta += colorSample;
-                break;
-            }
-
-            traveled += dist;
-            if (traveled >= intervalLength) break;
-        }
-
-        // Only merge on non-opaque areas
-        if (params.currentCascade < constants.cascadeCount - 1 && radDelta.a == 0.0) {
-          float upperSpacing = pow(sqrtBaseRayCount, cascadeIndex + 1.0);
-          // Grid of probes
-          float2 upperSize = floor(constants.resolution / upperSpacing);
-          // Position of this probe
-          float2 upperPosition = float2(index % upperSpacing, floor(index / upperSpacing)) * upperSize;
-
-          float2 offset = (probeRelativePosition + 0.5) / sqrtBaseRayCount;
-          float2 clamped = clamp(offset, float2(0.5), upperSize - 0.5);
-          float2 upperUv = (upperPosition + clamped) / constants.resolution;
-
-          float4 upperSample = lastTex.Sample(upperUv);
-
-          radDelta += upperSample;
-        }
-
+        merge(sqrtBaseRayCount, cascadeIndex, index, probeRelativePosition, radDelta);
+        
         // Accumulate total radiance
         radiance += radDelta;
     }
