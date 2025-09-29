@@ -71,9 +71,9 @@ int main() {
   glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
-  gl::Buffer fullscreenVbo(static_cast<GLuint>(fullscreenTriangle.size()) *
-                               sizeof(BasicVertex),
-                           fullscreenTriangle.data());
+  gl::BasicBuffer fullscreenVbo(static_cast<GLuint>(fullscreenTriangle.size()) *
+                                    sizeof(BasicVertex),
+                                fullscreenTriangle.data());
   gl::Vao fullscreenVao;
   fullscreenVao.bindVertexBuffer(0, fullscreenVbo.id(), 0, sizeof(BasicVertex));
   fullscreenVao.attribFormat(0, 2, GL_FLOAT, false, 0, 0);

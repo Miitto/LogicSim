@@ -9,7 +9,7 @@ class Drawing {
   gl::Texture m_texture;
   gl::Framebuffer m_fbo;
 
-  gl::Buffer m_ubo;
+  gl::StorageBuffer m_ubo;
   void* m_uboMapping;
 
   float m_brushRadius = 5.f;
@@ -17,7 +17,7 @@ class Drawing {
 
   Drawing(const gl::Vao& fullscreenVao, gl::Program&& drawProgram,
           gl::Texture&& drawTexture, gl::Framebuffer&& drawFbo,
-          gl::Buffer&& ubo, void* uboMapping)
+          gl::StorageBuffer&& ubo, void* uboMapping)
       : m_fullscreenVao(fullscreenVao), m_program(std::move(drawProgram)),
         m_texture(std::move(drawTexture)), m_fbo(std::move(drawFbo)),
         m_ubo(std::move(ubo)), m_uboMapping(uboMapping) {}
@@ -51,13 +51,14 @@ public:
     gl::Framebuffer drawFbo;
     drawFbo.attachTexture(GL_COLOR_ATTACHMENT0, drawTexture);
 
-    gl::Buffer drawParamsBuffer(sizeof(DrawParams), nullptr,
-                                GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                                    GL_MAP_PERSISTENT_BIT |
-                                    GL_MAP_COHERENT_BIT);
+    gl::StorageBuffer drawParamsBuffer(
+        sizeof(DrawParams), nullptr,
+        gl::Buffer::Usage::DYNAMIC | gl::Buffer::Usage::WRITE |
+            gl::Buffer::Usage::PERSISTENT | gl::Buffer::Usage::COHERENT);
 
-    auto drawMapping = drawParamsBuffer.map(
-        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    auto drawMapping = drawParamsBuffer.map(gl::Buffer::Mapping::WRITE |
+                                            gl::Buffer::Mapping::PERSISTENT |
+                                            gl::Buffer::Mapping::COHERENT);
 
     return Drawing(fullscreenVao, std::move(drawProgram),
                    std::move(drawTexture), std::move(drawFbo),
@@ -88,7 +89,7 @@ public:
       };
 
       memcpy(m_uboMapping, &params, sizeof(DrawParams));
-      m_ubo.bindBase(GL_UNIFORM_BUFFER, 0);
+      m_ubo.bindBase(gl::StorageBuffer::Target::UNIFORM, 0);
       m_fbo.bind();
       m_program.bind();
       m_fullscreenVao.bind();

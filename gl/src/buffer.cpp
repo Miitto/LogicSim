@@ -19,7 +19,7 @@ namespace {
 
 namespace gl {
   inline void gl::Buffer::init(GLuint size, const void* data,
-                               GLbitfield flags) {
+                               UsageBitFlag flags) {
 #ifndef NDEBUG
     if (m_size != 0) {
       gl::Logger::error("Attempted to reinitialize a buffer");
@@ -30,7 +30,7 @@ namespace gl {
     glNamedBufferStorage(m_id, size, data, flags);
   }
 
-  void* gl::Buffer::map(GLbitfield flags, GLuint offset, GLuint length) {
+  void* gl::Buffer::map(MappingBitFlag flags, GLuint offset, GLuint length) {
     length = length == std::numeric_limits<GLuint>::max() ? m_size : length;
 
     m_mapping = glMapNamedBufferRange(m_id, offset, length, flags);

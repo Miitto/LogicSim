@@ -17,7 +17,7 @@ class Jfa {
 
   FlipFlops m_flipFlops;
 
-  std::vector<gl::Buffer> m_ubos;
+  std::vector<gl::StorageBuffer> m_ubos;
 
   struct JfaResult {
     gl::Texture texture;
@@ -37,7 +37,7 @@ class Jfa {
   uint32_t m_maxJfaPasses;
 
   Jfa(const gl::Vao& fullscreenVao, Programs&& programs, FlipFlops&& flipFlops,
-      std::vector<gl::Buffer> ubos, JfaResult&& result,
+      std::vector<gl::StorageBuffer> ubos, JfaResult&& result,
       DistanceResult&& distanceResult, uint32_t jfaPasses,
       uint32_t maxJfaPasses, const gl::Window& window)
       : m_fullscreenVao(fullscreenVao), m_programs(std::move(programs)),
@@ -91,10 +91,12 @@ public:
     if (maxJfaPasses > m_maxJfaPasses) {
       // Add more UBOs
       for (uint32_t i = m_maxJfaPasses; i < maxJfaPasses; i++) {
-        gl::Buffer ubo(sizeof(JfaParams), nullptr,
-                       GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                           GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-        ubo.map(GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+        gl::StorageBuffer ubo(
+            sizeof(JfaParams), nullptr,
+            gl::Buffer::Usage::DYNAMIC | gl::Buffer::Usage::WRITE |
+                gl::Buffer::Usage::PERSISTENT | gl::Buffer::Usage::COHERENT);
+        ubo.map(gl::Buffer::Mapping::WRITE | gl::Buffer::Mapping::PERSISTENT |
+                gl::Buffer::Mapping::COHERENT);
         m_ubos.push_back(std::move(ubo));
       }
     } else if (maxJfaPasses < m_maxJfaPasses) {
@@ -134,7 +136,7 @@ public:
       for (uint32_t i = 0; i < m_jfaPasses; i++) {
         inTex->bind(0);
         output->bind();
-        m_ubos[i].bindBase(GL_UNIFORM_BUFFER, 0);
+        m_ubos[i].bindBase(gl::StorageBuffer::Target::UNIFORM, 0);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 

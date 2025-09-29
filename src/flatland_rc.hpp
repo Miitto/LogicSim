@@ -13,8 +13,8 @@ class FlatlandRc {
 
   TexFbo m_result;
 
-  gl::Buffer m_constantsUbo;
-  std::vector<gl::Buffer> m_paramsUbo;
+  gl::StorageBuffer m_constantsUbo;
+  std::vector<gl::StorageBuffer> m_paramsUbo;
 
   FlipFlops m_flipFlops;
 
@@ -25,8 +25,8 @@ class FlatlandRc {
   uint32_t m_maxCascades;
 
   FlatlandRc(const gl::Vao& fullscreenVao, gl::Program&& rcProgram,
-             TexFbo&& result, gl::Buffer&& constantsUbo,
-             std::vector<gl::Buffer>&& paramsUbo, FlipFlops&& flipFlops,
+             TexFbo&& result, gl::StorageBuffer&& constantsUbo,
+             std::vector<gl::StorageBuffer>&& paramsUbo, FlipFlops&& flipFlops,
              const uint32_t& rayCount, const uint32_t& maxSteps,
              uint32_t maxCascades)
       : m_fullscreenVao(fullscreenVao), m_program(std::move(rcProgram)),
@@ -54,10 +54,12 @@ public:
     if (maxCascades > m_maxCascades) {
       // Add more UBOs
       for (uint32_t i = m_maxCascades; i < maxCascades; i++) {
-        gl::Buffer ubo(sizeof(FlatlandRcParams), nullptr,
-                       GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                           GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-        ubo.map(GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+        gl::StorageBuffer ubo(
+            sizeof(FlatlandRcParams), nullptr,
+            gl::Buffer::Usage::DYNAMIC | gl::Buffer::Usage::WRITE |
+                gl::Buffer::Usage::PERSISTENT | gl::Buffer::Usage::COHERENT);
+        ubo.map(gl::Buffer::Mapping::WRITE | gl::Buffer::Mapping::PERSISTENT |
+                gl::Buffer::Mapping::COHERENT);
         m_paramsUbo.push_back(std::move(ubo));
       }
     } else if (maxCascades < m_maxCascades) {
@@ -107,19 +109,23 @@ public:
     }
     auto& program = programOpt.value();
 
-    gl::Buffer constantsUbo(sizeof(FlatlandRcConstants), nullptr,
-                            GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                                GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-    constantsUbo.map(GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
-                     GL_MAP_COHERENT_BIT);
+    gl::StorageBuffer constantsUbo(
+        sizeof(FlatlandRcConstants), nullptr,
+        gl::Buffer::Usage::DYNAMIC | gl::Buffer::Usage::WRITE |
+            gl::Buffer::Usage::PERSISTENT | gl::Buffer::Usage::COHERENT);
+    constantsUbo.map(gl::Buffer::Mapping::WRITE |
+                     gl::Buffer::Mapping::PERSISTENT |
+                     gl::Buffer::Mapping::COHERENT);
 
-    std::vector<gl::Buffer> paramsUbo;
+    std::vector<gl::StorageBuffer> paramsUbo;
     paramsUbo.reserve(maxCascades);
     for (uint32_t i = 0; i < maxCascades; i++) {
-      gl::Buffer ubo(sizeof(FlatlandRcParams), nullptr,
-                     GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                         GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-      ubo.map(GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+      gl::StorageBuffer ubo(
+          sizeof(FlatlandRcParams), nullptr,
+          gl::Buffer::Usage::DYNAMIC | gl::Buffer::Usage::WRITE |
+              gl::Buffer::Usage::PERSISTENT | gl::Buffer::Usage::COHERENT);
+      ubo.map(gl::Buffer::Mapping::WRITE | gl::Buffer::Mapping::PERSISTENT |
+              gl::Buffer::Mapping::COHERENT);
       paramsUbo.push_back(std::move(ubo));
     }
     FlipFlops flipFlops(GL_RGBA32F, size, maxCascades);
@@ -155,13 +161,13 @@ public:
       void* constMapping = m_constantsUbo.getMapping();
       std::memcpy(constMapping, &params, sizeof(FlatlandRcConstants));
     }
-    m_constantsUbo.bindBase(GL_UNIFORM_BUFFER, 0);
+    m_constantsUbo.bindBase(gl::StorageBuffer::Target::UNIFORM, 0);
 
     for (int32_t i = m_maxCascades - 1; i >= 0; --i) {
       FlatlandRcParams params{.currentCascade = static_cast<uint32_t>(i)};
       auto mapping = m_paramsUbo[i].getMapping();
       std::memcpy(mapping, &params, sizeof(FlatlandRcParams));
-      m_paramsUbo[i].bindBase(GL_UNIFORM_BUFFER, 1);
+      m_paramsUbo[i].bindBase(gl::StorageBuffer::Target::UNIFORM, 1);
 
       if (i >= 1) {
         m_flipFlops[i].fbo.bind();

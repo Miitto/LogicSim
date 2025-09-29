@@ -38,13 +38,16 @@ std::optional<Jfa> Jfa::create(const gl::Vao& fullscreenVao,
         static_cast<uint32_t>(ceil(log2(std::max(size.width, size.height))));
     uint32_t maxJfaPasses = jfaPasses;
 
-    std::vector<gl::Buffer> ubos;
+    std::vector<gl::StorageBuffer> ubos;
     ubos.reserve(jfaPasses);
     for (uint32_t i = 0; i < jfaPasses; i++) {
-      gl::Buffer ubo(sizeof(JfaParams), nullptr,
-                     GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                         GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-      ubo.map(GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+      gl::StorageBuffer ubo(
+          sizeof(JfaParams), nullptr,
+          gl::Buffer::UsageBitFlag(gl::Buffer::Usage::DYNAMIC) |
+              gl::Buffer::Usage::WRITE | gl::Buffer::Usage::PERSISTENT |
+              gl::Buffer::Usage::COHERENT);
+      ubo.map(gl::Buffer::Mapping::WRITE | gl::Buffer::Mapping::PERSISTENT |
+              gl::Buffer::Mapping::COHERENT);
       ubos.push_back(std::move(ubo));
     }
 

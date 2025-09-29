@@ -38,7 +38,7 @@ public:
                   .color = {0.0f, 0.0f, 1.0f}},
     };
     gl::Vao vao{};
-    gl::Buffer vbo(3 * sizeof(TriVertex), &vertices);
+    gl::BasicBuffer vbo(3 * sizeof(TriVertex), &vertices);
     vao.bindVertexBuffer(0, vbo.id(), 0, sizeof(TriVertex));
     vao.attribFormat(0, 3, GL_FLOAT, false, offsetof(TriVertex, position), 0);
     vao.attribFormat(1, 3, GL_FLOAT, false, offsetof(TriVertex, color), 0);

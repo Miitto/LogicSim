@@ -7,14 +7,14 @@
 class NaiveRaymarch {
   const gl::Vao& m_fullscreenVao;
   gl::Program m_program;
-  gl::Buffer m_paramsUbo;
+  gl::StorageBuffer m_paramsUbo;
   void* m_paramsMapping;
 
   const uint32_t& m_rayCount;
   const uint32_t& m_maxSteps;
 
   NaiveRaymarch(const gl::Vao& fullscreenVao, gl::Program&& naiveProgram,
-                gl::Buffer&& paramsUbo, void* paramsMapping,
+                gl::StorageBuffer&& paramsUbo, void* paramsMapping,
                 const uint32_t& rayCount, const uint32_t& maxSteps)
       : m_fullscreenVao(fullscreenVao), m_program(std::move(naiveProgram)),
         m_paramsUbo(std::move(paramsUbo)), m_paramsMapping(paramsMapping),
@@ -42,12 +42,14 @@ public:
     }
     auto& naiveProgram = naiveProgramOpt.value();
 
-    gl::Buffer paramsUbo(sizeof(NaiveParams), nullptr,
-                         GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT |
-                             GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    gl::StorageBuffer paramsUbo(
+        sizeof(NaiveParams), nullptr,
+        gl::Buffer::Usage::DYNAMIC | gl::Buffer::Usage::WRITE |
+            gl::Buffer::Usage::PERSISTENT | gl::Buffer::Usage::COHERENT);
 
-    auto paramsMapping = paramsUbo.map(
-        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    auto paramsMapping = paramsUbo.map(gl::Buffer::Mapping::WRITE |
+                                       gl::Buffer::Mapping::PERSISTENT |
+                                       gl::Buffer::Mapping::COHERENT);
     return NaiveRaymarch(fullscreenVao, std::move(naiveProgram),
                          std::move(paramsUbo), paramsMapping, rayCount,
                          maxSteps);
@@ -67,7 +69,7 @@ public:
     };
 
     memcpy(m_paramsMapping, &nparams, sizeof(NaiveParams));
-    m_paramsUbo.bindBase(GL_UNIFORM_BUFFER, 0);
+    m_paramsUbo.bindBase(gl::StorageBuffer::Target::UNIFORM, 0);
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
   }
